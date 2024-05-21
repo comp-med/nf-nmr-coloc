@@ -1,0 +1,8 @@
+.nextflow.log*
+.nextflow/
+work/
+runInfo/
+test_data/
+output/
+git_backup
+config/test.config
