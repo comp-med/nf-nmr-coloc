@@ -52,11 +52,12 @@ include {
 
 } from './modules/top_snp_and_proxies.nf'
 
-// include {
-// 
-//     BIOMART_GENE_ANNOTATION;
-// 
-// } from './modules/biomart_gene_annotation.nf'
+include {
+
+  BIOMART_GENE_ANNOTATION
+
+} from './modules/biomart_gene_annotation.nf'
+
 // 
 // include {
 // 
@@ -98,10 +99,10 @@ workflow {
 
     // Extract the content of the ld matrix and snplist files to values
     coloc_input_files = coloc_input_files
- 	.map({
-	    region, region_file, ld_file, snplist_file -> 
-		[region, region_file, ld_file.text, snplist_file.text]
-	 })
+      .map({
+        region, region_file, ld_file, snplist_file -> 
+        [region, region_file, ld_file.text, snplist_file.text]
+      })
 
     // Use the joint input data
     coloc_input_files_with_top_snps = TOP_SNP_AND_PROXIES(
@@ -109,26 +110,25 @@ workflow {
     )
 
     // For colocalization, outcome data is needed
-    // outcome_sumstat_file_ch = Channel.fromPath(
-    //     "${params.outcome_sumstat_directory}/**/${params.genome_build}/*.tsv.bgz",
-    //     checkIfExists: true
-    // )
-    // .map({ path -> "${path.getSimpleName()}, ${path}" })
-    // .collectFile( 
-    //     name: "all_outcome_files.csv",
-    //     newLine: true
-    // )
-// 
-    // // Outcome data dictionary with sample sizes needed for colocalization
-    // outcome_data_dictionary_ch = Channel.fromPath(
-    //     "$params.outcome_data_dictionary",
-    //     checkIfExists: true
-    // )
-// 
-    // // Download the gene annotation from ENSEMBL using biomaRt
-    // biomart = BIOMART_GENE_ANNOTATION()
-// 
-    // // This is the workhorse of the pipeline - the colocalization analysis
+    outcome_sumstat_file_ch = Channel.fromPath(
+      "${params.outcome_sumstat_directory}/**/${params.genome_build}/*.tsv.bgz",
+      checkIfExists: true
+      )
+      .map({ path -> "${path.getSimpleName()}, ${path}" })
+      .collectFile(
+        name: "all_outcome_files.csv",
+        newLine: true
+     )
+    // Outcome data dictionary with sample sizes needed for colocalization
+    outcome_data_dictionary_ch = Channel.fromPath(
+      "$params.outcome_data_dictionary",
+      checkIfExists: true
+    )
+    
+    // Download the gene annotation from ENSEMBL using biomaRt
+    biomart = BIOMART_GENE_ANNOTATION()
+    
+    // This is the workhorse of the pipeline - the colocalization analysis
     // RUN_COLOC(
     //     snplist_ld_coloc_input,
     //     outcome_sumstat_file_ch,
