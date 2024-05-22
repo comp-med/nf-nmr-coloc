@@ -1,7 +1,6 @@
 process CREATE_INPUT_FILES {
     
-    cache true
-    tag "$olink_id"
+    tag "$nmr_finemap_region"
     label 'rProcess'
 
     input: 
@@ -10,8 +9,10 @@ process CREATE_INPUT_FILES {
     each path(nmr_finemapping_results_directory)
 
     output:
-    val nmr_finemap_region
-    
+    tuple val(nmr_finemap_region), 
+          path("finemap_results_region.tsv"), 
+          path("ld_file"), 
+          path("snplist_file")
 
     script:
     """

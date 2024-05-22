@@ -5,13 +5,6 @@ args <- commandArgs(trailingOnly = TRUE)
 options(stringsAsFactors = FALSE)
 
 # Get arguments from nextflow process
-
-# TODO remove!
-# nmr_finemap_master_file <- "/sc-projects/sc-proj-computational-medicine/people/Martijn/02_UKBB_NMR/03_GWAS_NMR/02_fine_mapping/input/unique_finemapped_regions.txt"
-# nmr_finemap_region <- "10_1"
-# nmr_finemap_region_dir <- "/sc-projects/sc-proj-computational-medicine/people/Martijn/02_UKBB_NMR/03_GWAS_NMR/02_fine_mapping/output/region_data/10_1/"
-# nmr_finemapping_results_directory <- "/sc-projects/sc-proj-computational-medicine/people/Martijn/02_UKBB_NMR/03_GWAS_NMR/02_fine_mapping/output/finemapping/"
-
 nmr_finemap_master_file <- args[1]
 nmr_finemap_region <- args[2]
 nmr_finemap_region_dir <- args[3]
@@ -24,6 +17,14 @@ library("glue", lib.loc = r.lib)
 
 # Main Script ----
 
+# Do not export the LD matrix itself, just the link
+ld_file <- glue("{Sys.readlink(nmr_finemap_region_dir)}/ldmat.ld")
+snplist_file <- glue("{Sys.readlink(nmr_finemap_region_dir)}/snplist.txt")
+
+# This contains the order of the LD matrix!
+snplist <- fread(snplist_file, header = FALSE)
+setnames(snplist, "snp")
+
 # Get all finemapping result directories for the input region
 master_file <- fread(nmr_finemap_master_file)
 master_file <- master_file[region_name == nmr_finemap_region]
@@ -32,19 +33,21 @@ finemap_results_region <- lapply(master_file$index, function(x) {
   fread(glue("{nmr_finemapping_results_directory}/{x}/finemapped_results.txt"))
 })
 finemap_results_region <- rbindlist(finemap_results_region)
-
-# TODO Change col names?
-
-finemap_results_region[, chr := ifelse(chr == "X", 23, chr)]
+finemap_results_region[, chrom := ifelse(chrom == "X", 23, chrom)]
 
 ## create identifier column in results to keep the mapping to the LD matrix
-finemap_results_region[, snp.id := 1:nrow(finemap_results_region)]
+stopifnot("SNP shoul be in snplist!" = all(finemap_results_region$id %in% snplist$snp))
+m1 <- match(finemap_results_region$id, snplist$snp)
+nrow(finemap_results_region)
+finemap_results_region[, snp_id := m1]
 
 ## order, keep in mind that cs -1 means not included in the credible set
-finemap_results_region <- finemap_results_region[order(-cs, -pip)]
+finemap_results_region <- finemap_results_region[order(-cs, -pip), .SD, by = pheno]
 
 ## create indicator to select
-finemap_results_region[, ind := 1:.N, by = "cs"]
+finemap_results_region[, ind := 1:.N, by = .(cs, pheno)]
+
+# Output ----
 
 fwrite(
   finemap_results_region,
@@ -52,13 +55,6 @@ fwrite(
   sep = "\t"
 )
 
-# export the paths of these
-ld_file <- glue("{nmr_finemap_region_dir}/ldmat.ld")
-snplist_file <- glue("{nmr_finemap_region_dir}/snplist.txt")
-
-
-
-#### TODO output
-# snplist
-# res.olink
-# ld
+# write the location of the files to a file to extract later
+cat(ld_file, file = "ld_file",sep = "")
+cat(snplist_file, file = "snplist_file",sep = "")

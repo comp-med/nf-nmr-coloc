@@ -46,12 +46,12 @@ include {
 
 } from './modules/create_input_files.nf'
 
-// include {
-// 
-//     TOP_SNP_AND_PROXIES
-// 
-// } from './modules/top_snp_and_proxies.nf'
-// 
+include {
+
+    TOP_SNP_AND_PROXIES
+
+} from './modules/top_snp_and_proxies.nf'
+
 // include {
 // 
 //     BIOMART_GENE_ANNOTATION;
@@ -72,74 +72,43 @@ workflow {
       "$params.nmr_finemap_master_table",
       checkIfExists: true,
       type: 'file'      
-    ).view()
+    )
 
     // Channel for each region
     nmr_credible_set_regions_ch = Channel.fromPath(
       "$params.nmr_ld_directory/*",
       checkIfExists: true,
       type: 'dir'
-    ).map({ path -> "${path.getName()}, ${path}" })
-     .view()
+    ).map({ path -> ["${path.getName()}", "${path}"] })
     
     // Channel for the finemapping results directory
-    nmr_credible_set_regions_ch = Channel.fromPath(
+    nmr_finemapping_results_directory_ch = Channel.fromPath(
       "$params.nmr_credible_sets_directory/",
       checkIfExists: true,
       type: 'dir'
-    ).view()
+    )
     
     // For each region, get all credible set data for each phenotype 
     // from master file
-    //CREATE_INPUT_FILES (
-    //  
-    //)
+    coloc_input_files = CREATE_INPUT_FILES (
+      nmr_finemapping_master_file_ch,
+      nmr_credible_set_regions_ch,
+      nmr_finemapping_results_directory_ch 
+    )
 
-    // SCALLOP protein input is a list of files from the specified directory
-    // scallop_cis_credible_sets_files = Channel.fromPath(
-    //     "${params.scallop_credible_sets_directory}/fine.mapped.*.txt",
-    //     checkIfExists: true,
-    //     type: 'file'
-    //     )
-// 
-    // // Turn directory with input files into list with Protein ID,
-    // // chromosome, start, end and file path tuple
-    // parsed_scallop_input = scallop_cis_credible_sets_files 
-    //     .map { file -> [
-    //         file.getName().tokenize('.')[2],
-    //         file.getName().tokenize('.')[3],
-    //         file.getName().tokenize('.')[4],
-    //         file.getName().tokenize('.')[5],
-    //         file] 
-    //         }
-// 
-    // // Create input files necessary to calculate LD between SNPs
-    // coloc_input = CREATE_INPUT_FILES(
-    //     parsed_scallop_input,
-    // )
-// 
-    // // Create a joint channel by key for each ID from the two processes
-    // ld_calculation_input_with_key = ld_calculation_input.ids
-    //     .map({
-    //             olink_id, chr, pos_start, pos_end, olink_file ->
-    //             ["${olink_id}.${chr}.${pos_start}.${pos_end}", olink_file]
-    //          })
-    // ld_matrix_with_key = ld_matrix.ld
-    //     .map(
-    //     {
-    //         olink_id, chr, pos_start, pos_end, ld ->
-    //         ["${olink_id}.${chr}.${pos_start}.${pos_end}", ld]
-    //         }
-    //     )
-    // snp_files_and_ld_matrix = ld_matrix_with_key
-    //     .join(ld_calculation_input_with_key)
-// 
-    // // Use the joint channel as input
-    // snplist_ld_coloc_input = TOP_SNP_AND_PROXIES(
-    //      snp_files_and_ld_matrix
-    // )
-// 
-    // // For colocalization, outcome data is needed
+    // Extract the content of the ld matrix and snplist files to values
+    coloc_input_files = coloc_input_files
+ 	.map({
+	    region, region_file, ld_file, snplist_file -> 
+		[region, region_file, ld_file.text, snplist_file.text]
+	 })
+
+    // Use the joint input data
+    coloc_input_files_with_top_snps = TOP_SNP_AND_PROXIES(
+         coloc_input_files
+    )
+
+    // For colocalization, outcome data is needed
     // outcome_sumstat_file_ch = Channel.fromPath(
     //     "${params.outcome_sumstat_directory}/**/${params.genome_build}/*.tsv.bgz",
     //     checkIfExists: true
