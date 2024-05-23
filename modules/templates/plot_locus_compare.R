@@ -415,7 +415,11 @@ plot.locus.compare <- function(
   ## now plot it just below
   par(mar = c(1.5, 1.5, .1, .5), tck = -.02, bty = "o", lwd = .5)
   plot(
-    range(sum.stat$genpos), 
+    # This will not look right when the range of the plotted values is too narrow
+    # For example, when smaller than one gene width, only one horizontal line
+    # will show! Extending the plot range as shown below will print everything!
+    # c(sum.stat$genpos[1] - 3e6, sum.stat$genpos[1] + 3e6),
+    range(sum.stat$genpos),
     c(0, max(tmp.genes$line) + .5),
     yaxt = "n", 
     xaxt = "n",
