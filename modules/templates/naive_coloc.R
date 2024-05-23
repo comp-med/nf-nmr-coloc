@@ -5,17 +5,18 @@
 ## causal variant
 
 naive.coloc <- function(
-  res.all,
+  res_all,
   ld,
   x,
+  y, 
   x_is_binary,
-  olink_id,
-  res.olink,
+  nmr_region,
+  res_finemapping,
   biomart_gene_annotation,
   rec_file
   # other files from plot 1 & 2
 ) {
-  ## 'res.all' -- data set containing merged and aligned statistics
+  ## 'res_all' -- data set containing merged and aligned statistics
   ## 'ld'      -- corresponding LD matrix
 
   #-----------------------------------------#
@@ -23,12 +24,12 @@ naive.coloc <- function(
   #-----------------------------------------#
 
   ## top signal for the protein in all data
-  ts <- res.olink$snp.id[which.max(abs(res.olink$Effect / res.olink$StdErr))]
+  ts <- res_finemapping$snp_id[which.max(abs(res_finemapping$beta_marginal / res_finemapping$se_marginal))]
   ## top signal for protein in the overlap
-  is <- res.all$snp.id[which.max(abs(res.all$Effect / res.all$StdErr))]
+  is <- res_all$snp_id[which.max(abs(res_all$beta_marginal / res_all$se_marginal))]
   ## get the top SNP for the outcome
-  io <- res.all$snp.id[
-    which.max(abs(res.all$Effect.outcome / res.all$StdErr.outcome))
+  io <- res_all$snp_id[
+    which.max(abs(res_all$Effect_outcome / res_all$StdErr_outcome))
   ]
 
   ## conserved signal for phecode
@@ -41,19 +42,18 @@ naive.coloc <- function(
   #-----------------------------------------#
 
   ## order by position
-  res.all <- as.data.table(res.all)
-  res.all <- res.all[order(pos)]
+  setDT(res_all)
+  res_all <- res_all[order(genpos)]
 
   ## prepare input
   D1 <- list(
-    beta = res.all$Effect,
-    varbeta = res.all$StdErr^2,
+    beta = res_all$beta_marginal,
+    varbeta = res_all$se_marginal^2,
     type = "quant",
     sdY = 1,
-    N = max(res.all$TotalSampleSize),
-    MAF = res.all$MAF,
-    snp = res.all$snp.id,
-    position = 1:nrow(res.all)
+    N = 434646, # This is fixed for each metabolite
+    snp = res_all$snp_id,
+    position = 1:nrow(res_all)
   )
   
   ## binary outcome
@@ -62,27 +62,25 @@ naive.coloc <- function(
     # needs: N, s
     
     D2 <- list(
-      beta = res.all$Effect.outcome,
-      varbeta = res.all$StdErr.outcome^2,
+      beta = res_all$Effect_outcome,
+      varbeta = res_all$StdErr_outcome^2,
       type = "cc",
-      MAF = res.all$MAF,
-      N = max(res.all$N),
-      s = max(res.all$outcome_n_cases) / max(res.all$N),
-      snp = res.all$snp.id,
-      position = 1:nrow(res.all)
+      N = max(res_all$N),
+      s = max(res_all$outcome_n_cases) / max(res_all$N),
+      snp = res_all$snp_id,
+      position = 1:nrow(res_all)
     )
     
   ## Quantitative Outcome
   } else if (isFALSE(x_is_binary)) {
     
     D2 <- list(
-      beta = res.all$Effect.outcome,
-      varbeta = res.all$StdErr.outcome^2,
+      beta = res_all$Effect_outcome,
+      varbeta = res_all$StdErr_outcome^2,
       type = "quant",
-      MAF = res.all$MAF,
-      N = max(res.all$N),
-      snp = res.all$snp.id,
-      position = 1:nrow(res.all)
+      N = max(res_all$N),
+      snp = res_all$snp_id,
+      position = 1:nrow(res_all)
     )
     
   } else {
@@ -98,8 +96,11 @@ naive.coloc <- function(
 
   ## add the trait id and label
   naive.coloc$summary$outcome.id <- x
-  naive.coloc$summary$olink <- olink_id
+  naive.coloc$summary$exposure <- y
+  naive.coloc$summary$region <- nmr_region
+  naive.coloc$summary$olink <- paste(nmr_region, y, sep = ": ")
 
+  
   #-----------------------------------------#
   ## --         draw selected            --##
   #-----------------------------------------#
@@ -107,12 +108,7 @@ naive.coloc <- function(
   if (naive.coloc$summary$PP.H4.abf > .7 | naive.coloc$summary$ld.top > .8) {
 
     png(
-      paste0(
-        "graphics/coloc.",
-        x,
-        ".",
-        olink_id,
-        ".png"),
+      paste0(paste("graphics/coloc",nmr_region,y,x, sep = "_"), ".png"),
       width = 16,
       height = 8,
       units = "cm",
@@ -134,12 +130,12 @@ naive.coloc <- function(
     )
 
     plot.locus.compare(
-      sum.stat = res.all,
+      sum.stat = res_all,
       sum.coloc = naive.coloc$summary,
       ld = ld,
-      a.vars = res.all$rsid[
+      a.vars = res_all$id[
         which(
-          res.all$snp.id == naive.coloc$summary$best4
+          res_all$snp_id == naive.coloc$summary$best4
         )
       ],
       biomart_gene_annotation = biomart_gene_annotation,
@@ -147,29 +143,67 @@ naive.coloc <- function(
     )
     dev.off()
   }
-
+  
   ## add effect estimate top coloc snp
   naive.coloc <- as.data.table(naive.coloc$summary)
   naive.coloc[, best4 := as.numeric(best4)]
-  naive.coloc <- merge(naive.coloc, res.all[, c(
-    "snp.id", "MarkerName", "rsid", "EA", "NEA",
-    "MAF", "Effect", "StdErr", "Pvalue",
-    "pip", "cs", "Effect.outcome",
-    "StdErr.outcome", "P"
-  )],
-  by.x = "best4", by.y = "snp.id"
+  
+  # this was only needed for the plot
+  naive.coloc$olink <- NULL
+  
+  naive.coloc <- merge(
+    naive.coloc, 
+    res_all[, c(
+      "snp_id", "id", "marker_name", "allele1", "allele0",
+      "pval_marginal", "beta_marginal", "se_marginal",
+      "pip", "cs", "Effect_outcome",
+      "StdErr_outcome", "P"
+    )],
+    by.x = "best4",
+    by.y = "snp_id"
   )
-
-  ## do some renaming
-  names(naive.coloc) <- c(
-    "snp.id.H4", "snp.id.H2", "snp.id.H1", "nsnps",
-    "PP.H0.abf", "PP.H1.abf", "PP.H2.abf", "PP.H3.abf", "PP.H4.abf",
-    "snp.id.protein", "snp.id.outcome", "zscore.protein", "zscore.outcome",
-    "R2.1", "ld.top", "outcome.id", "olink",
-    "MarkerName", "rsid.protein", "EA", "NEA", "MAF",
-    "Effect.protein", "StdErr.protein", "Pvalue.protein", "pip", "cs",
-    "Effect.outcome", "StdErr.outcome", "Pvalue.outcome"
-  )
+  
+  setnames(
+    naive.coloc, 
+    old = c(
+      "best4", "hit2", "hit1", "nsnps", "PP.H0.abf", "PP.H1.abf", 
+      "PP.H2.abf", "PP.H3.abf", "PP.H4.abf", "best1", "best2", "hit1.margz", 
+      "hit2.margz", "R2.1", "ld.top", "outcome.id", "exposure", "region", 
+      "id", "marker_name", "allele1", "allele0", "pval_marginal", "beta_marginal", 
+      "se_marginal", "pip", "cs", "Effect_outcome", "StdErr_outcome", "P"),
+    new = c(
+      "snp_id_h4",
+      "snp_id_h2",
+      "snp_id_h1",
+      "n_snps",
+      "pp_h0_abf",
+      "pp_h1_abf",
+      "pp_h2_abf",
+      "pp_h3_abf",
+      "pp_h4_abf",
+      "snp_id_exposure",
+      "snp_id_outcome",
+      "zscore_exposure",
+      "zscore_outcome",
+      "r2_1",
+      "ld_top",
+      "outcome",
+      "exposure",
+      "region",
+      "id_exposure",
+      "marker_name",
+      "allele1",
+      "allele0",
+      "pval_exposure",
+      "beta_exposure",
+      "se_exposure",
+      "pip",
+      "cs",
+      "beta_outcome",
+      "se_outcome",
+      "pval_outcome"
+    )
+    )
 
   ## write results to file
   return(naive.coloc)

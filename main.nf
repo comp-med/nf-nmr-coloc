@@ -58,12 +58,11 @@ include {
 
 } from './modules/biomart_gene_annotation.nf'
 
-// 
-// include {
-// 
-//     RUN_COLOC
-// 
-// } from './modules/run_coloc.nf'
+include {
+
+  RUN_COLOC
+
+} from './modules/run_coloc.nf'
 
 // WORKFLOW -------------------------------------------------------------------
 
@@ -129,12 +128,12 @@ workflow {
     biomart = BIOMART_GENE_ANNOTATION()
     
     // This is the workhorse of the pipeline - the colocalization analysis
-    // RUN_COLOC(
-    //     snplist_ld_coloc_input,
-    //     outcome_sumstat_file_ch,
-    //     outcome_data_dictionary_ch,
-    //     biomart.gene_annotation
-    // )
+    RUN_COLOC(
+        coloc_input_files_with_top_snps,
+        outcome_sumstat_file_ch,
+        outcome_data_dictionary_ch,
+        biomart.gene_annotation
+    )
 }
 
 // SUMMARY --------------------------------------------------------------------

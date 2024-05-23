@@ -32,7 +32,7 @@ plot.locus.compare <- function(
     sum.stat$log10p.olink <- sum.stat$LOG10P
   } else {
     sum.stat$log10p.olink <- -pchisq(
-      (sum.stat[, "Effect"] / sum.stat[, "StdErr"])^2,
+      (sum.stat[, "beta_marginal"] / sum.stat[, "se_marginal"])^2,
       df = 1,
       lower.tail = FALSE,
       log.p = TRUE
@@ -40,7 +40,7 @@ plot.locus.compare <- function(
   }
   ## trait
   sum.stat$log10p.trait <- -pchisq(
-    (sum.stat[, "Effect.outcome"] / sum.stat[, "StdErr.outcome"])^2,
+    (sum.stat[, "Effect_outcome"] / sum.stat[, "StdErr_outcome"])^2,
     df = 1,
     lower.tail = FALSE,
     log.p = TRUE
@@ -59,9 +59,9 @@ plot.locus.compare <- function(
       sum.stat[, paste0("R2.", j)] <- ld[sum.stat$snp.rsid, ii]^2
     } else {
       ## map variant to rsid
-      ii <- sum.stat$snp.id[which(sum.stat$rsid == a.vars[j])]
+      ii <- sum.stat$snp_id[which(sum.stat$id == a.vars[j])]
       ## add to the data
-      sum.stat[, paste0("R2.", j)] <- ld[sum.stat$snp.id, ii]^2
+      sum.stat[, paste0("R2.", j)] <- ld[sum.stat$snp_id, ii]^2
     }
   }
 
@@ -85,15 +85,16 @@ plot.locus.compare <- function(
   ## subset to region of interest
   rec <- subset(
     rec, 
-    Position.bp. >= min(sum.stat$pos, na.rm = TRUE) &
-      Position.bp. <= max(sum.stat$pos, na.rm = TRUE)
+    Position.bp. >= min(sum.stat$genpos, na.rm = TRUE) &
+      Position.bp. <= max(sum.stat$genpos, na.rm = TRUE)
   )
 
   #------------------------------------#
   ## --        oppose p-values       --##
   #------------------------------------#
 
-  plot(log10p.trait ~ log10p.olink,
+  plot(
+    log10p.trait ~ log10p.olink,
     xlim = c(0, max(sum.stat$log10p.olink) * 1.05),
     data = sum.stat,
     cex = .4,
@@ -124,7 +125,7 @@ plot.locus.compare <- function(
     )
 
     ## add lead variant as diamond
-    tmp <- subset(sum.stat, rsid == a.vars[j])
+    tmp <- subset(sum.stat, id == a.vars[j])
     print(tmp)
     # print(tmp)
     points(
@@ -204,7 +205,7 @@ plot.locus.compare <- function(
 
     ## add all variants
     plot(
-      sum.stat[, "pos"], 
+      sum.stat[, "genpos"], 
       sum.stat[, paste("log10p", tr[k], sep = ".")],
       xlab = "", ylab = expression(-log[10]("p-value")),
       ylim = c(
@@ -228,17 +229,17 @@ plot.locus.compare <- function(
       ## rsidentify all up to R2>.3
       tmp <- sum.stat[which(sum.stat[, paste0("R2.", j)] >= .3), ]
       ## add points
-      points(tmp[, "pos"], tmp[, paste("log10p", tr[k], sep = ".")],
+      points(tmp[, "genpos"], tmp[, paste("log10p", tr[k], sep = ".")],
         cex = .5, pch = 21, col = "grey10",
         bg = col.list[[j]][ceiling(tmp[, paste0("R2.", j)] * 100)],
         lwd = .2
       )
 
       ## add lead variant as diamond
-      tmp <- subset(sum.stat, rsid == a.vars[j])
+      tmp <- subset(sum.stat, id == a.vars[j])
       print(tmp)
       points(
-        tmp[, "pos", drop = F], 
+        tmp[, "genpos", drop = F], 
         tmp[, paste("log10p", tr[k], sep = "."), drop = F],
         pch = 23,
         lwd = .5,
@@ -250,7 +251,7 @@ plot.locus.compare <- function(
 
       ## annotate
       text(
-        tmp[, "pos", drop = F], 
+        tmp[, "genpos", drop = F], 
         tmp[, paste("log10p", tr[k], sep = "."), drop = F] * 1.05,
         labels = a.vars[j],
         cex = .4,
@@ -260,8 +261,8 @@ plot.locus.compare <- function(
       )
       print(tmp)
       ## add arrow to combine both
-      arrows(tmp[, "pos"], tmp[, paste("log10p", tr[k], sep = ".")],
-        tmp[, "pos"], tmp[, paste("log10p", tr[k], sep = ".")] * 1.05,
+      arrows(tmp[, "genpos"], tmp[, paste("log10p", tr[k], sep = ".")],
+        tmp[, "genpos"], tmp[, paste("log10p", tr[k], sep = ".")] * 1.05,
         lwd = .5, length = 0, xpd = NA
       )
 
@@ -366,9 +367,9 @@ plot.locus.compare <- function(
   ## subset to what is needed
   tmp.genes <- subset(
     tmp.genes,
-    chromosome_name == ifelse(sum.stat$chr[1] == 23, "X", sum.stat$chr[1]) &
-      start_position >= min(sum.stat$pos, na.rm = T) - 3e6 &
-      end_position <= max(sum.stat$pos, na.rm = T) + 3e6
+    chromosome_name == ifelse(sum.stat$chrom[1] == 23, "X", sum.stat$chrom[1]) &
+      start_position >= min(sum.stat$genpos, na.rm = T) - 3e6 &
+      end_position <= max(sum.stat$genpos, na.rm = T) + 3e6
   )
 
   ## restrict to protein encoding genes for now
@@ -413,16 +414,21 @@ plot.locus.compare <- function(
 
   ## now plot it just below
   par(mar = c(1.5, 1.5, .1, .5), tck = -.02, bty = "o", lwd = .5)
-  plot(range(sum.stat$pos), c(0, max(tmp.genes$line) + .5),
-    yaxt = "n", xaxt = "n", ylab = "",
-    xlab = paste("Genomic position on chrosome", sum.stat$chr[1]), type = "n",
+  plot(
+    range(sum.stat$genpos), 
+    c(0, max(tmp.genes$line) + .5),
+    yaxt = "n", 
+    xaxt = "n",
+    ylab = "",
+    xlab = paste("Genomic position on chrosome", sum.stat$chrom[1]),
+    type = "n",
     ylim = rev(c(0, max(tmp.genes$line) + .5))
   )
   axis(1, lwd = .5)
   ## position of the lead variant
   for (j in 1:length(a.vars)) {
-    ii <- which(sum.stat$rsid == a.vars[j])
-    abline(v = sum.stat$pos[ii], lwd = .3, col = cls[j])
+    ii <- which(sum.stat$id  == a.vars[j])
+    abline(v = sum.stat$genpos[ii], lwd = .3, col = cls[j])
   }
   ## add genes
   arrows(
@@ -433,9 +439,13 @@ plot.locus.compare <- function(
     length = 0
   )
   ## add Gene Names on top
-  text(tmp.genes$start_position + (
-    tmp.genes$end_position - tmp.genes$start_position) / 2, tmp.genes$line,
-    cex = .3, font = 3,
-    labels = tmp.genes$external_gene_name, pos = 3, offset = .1
+  text(
+    tmp.genes$start_position + (tmp.genes$end_position - tmp.genes$start_position) / 2,
+    tmp.genes$line,
+    cex = .3, 
+    font = 3,
+    labels = tmp.genes$external_gene_name, 
+    pos = 3, 
+    offset = .1
   )
 }

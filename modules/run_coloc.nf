@@ -1,6 +1,6 @@
 process RUN_COLOC {
     
-    tag "$id"
+    tag "$nmr_finemap_region"
     label 'rProcess'
     publishDir = [
         [
@@ -16,7 +16,7 @@ process RUN_COLOC {
     ]
 
     input:
-    tuple val(id), path(snplist), path(top_snp), path(ld), path(res_olink)
+    tuple val(nmr_finemap_region), path(proxy_snplist), path(top_snp), path(ld_matrix), path(res_finemapping)
     each path(outcome_sumstat_files)
     each path(outcome_data_dictionary)
     each path(biomart_gene_annotation)
@@ -27,11 +27,11 @@ process RUN_COLOC {
     script:
     """
     run_coloc.R \
-        $id \
-        $snplist \
+        $nmr_finemap_region \
+        $proxy_snplist \
         $top_snp \
-        $ld \
-        $res_olink \
+        $ld_matrix \
+        $res_finemapping \
         $outcome_sumstat_files \
         $outcome_data_dictionary \
         ${task.cpus} \
