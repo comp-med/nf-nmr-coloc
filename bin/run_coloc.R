@@ -284,10 +284,13 @@ res_coloc <- mclapply(
 ## combine
 res_coloc <- rbindlist(res_coloc, fill = TRUE, use.names = TRUE)
 
-## store results
-write.table(
-  res_coloc,
-  paste0(paste("./tables/coloc_results_region", nmr_region, sep = "_"), ".tsv"),
-  sep = "\t",
-  row.names = FALSE
-)
+if(nrow(res_coloc) > 0) {
+  ## store results
+  write.table(
+    res_coloc,
+    paste0(paste("./tables/coloc_results_region", nmr_region, sep = "_"), ".tsv"),
+    sep = "\t",
+    row.names = FALSE
+  )
+}
+
