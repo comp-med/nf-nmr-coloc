@@ -183,7 +183,7 @@ res_coloc <- mclapply(
     ## combine
     res_all <- merge(
       res_finemapping_pheno,
-      outcome_stats[, c("marker_name", "A1", "A2", "BETA", "SE", "P", "N")],
+      outcome_stats[, c("marker_name", "A1", "A2", "BETA", "SE", "P", "N", "FRQ")],
       by = "marker_name",
       suffixes = c("_exposure", "_outcome")
     )

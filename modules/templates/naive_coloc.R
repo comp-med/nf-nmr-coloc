@@ -79,6 +79,7 @@ naive.coloc <- function(
       varbeta = res_all$StdErr_outcome^2,
       type = "quant",
       N = max(res_all$N),
+      MAF = res_all$FRQ,
       snp = res_all$snp_id,
       position = 1:nrow(res_all)
     )

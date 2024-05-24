@@ -69,6 +69,7 @@ susie.coloc <- function(
       varbeta = res.all$StdErr_outcome^2,
       type = "quant",
       N = max(res.all$N),
+      MAF = res.all$FRQ,
       snp = paste0("V", res.all$snp_id),
       position = 1:nrow(res.all),
       ## subset the LD matrix to what is needed
