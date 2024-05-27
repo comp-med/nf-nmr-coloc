@@ -64,6 +64,10 @@ susie.coloc <- function(
     ## Quantitative Outcome
   } else if (isFALSE(x_is_binary)) {
     
+    if (is.null(res_all$FRQ)) {
+      return(list())
+    }
+    
     D2 <- list(
       beta = res.all$Effect_outcome, 
       varbeta = res.all$StdErr_outcome^2,

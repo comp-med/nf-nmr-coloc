@@ -103,7 +103,7 @@ res_coloc <- mclapply(
   test_plan$test_index,
   function(i) {
     
-    # i <-  1
+    # i <-  3
     x <- test_plan[test_index == (i), outcome]
     y <- test_plan[test_index == (i), exposure]
       
@@ -119,13 +119,17 @@ res_coloc <- mclapply(
     # Needs to contain `SNP` to grep the first line!
     joint_snplist <- fread(snplist)
     fwrite(
-      list(c("SNP", joint_snplist[pheno == (y), id_proxy])), 
+      list(c(
+        "SNP", # To get the header, too
+        joint_snplist[pheno == (y), id_proxy])), 
       "single_phenotype_snplist.tsv",
       sep = "\t",
       col.names = FALSE
     )
     
-    outcome_sumstats_call <- glue("zgrep -wF -f single_phenotype_snplist.tsv {phenotype_file}")
+    outcome_sumstats_call <- glue(
+      "zgrep -wF -f single_phenotype_snplist.tsv {phenotype_file}"
+    )
     
     ## get the relevant associations (A2 is the effect allele)
     outcome_stat <- fread(cmd = outcome_sumstats_call)
@@ -180,10 +184,16 @@ res_coloc <- mclapply(
       message(glue("[LOG] Using single sample size value for `runsusie()`"))
     }
     
+    
+    coloc_input_colums <- c("marker_name", "A1", "A2", "BETA", "SE", "P", "N", "FRQ")
+    available_coloc_input_colums <- names(outcome_stats)[
+      names(outcome_stats) %in% coloc_input_colums
+    ]
+
     ## combine
     res_all <- merge(
       res_finemapping_pheno,
-      outcome_stats[, c("marker_name", "A1", "A2", "BETA", "SE", "P", "N", "FRQ")],
+      outcome_stats[,  ..available_coloc_input_colums],
       by = "marker_name",
       suffixes = c("_exposure", "_outcome")
     )
