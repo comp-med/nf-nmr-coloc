@@ -39,9 +39,9 @@ suppressPackageStartupMessages(library(glue, lib.loc = r_lib))
 
 # ADDITIONAL SCRIPTS ----
 
-source("../../../modules/templates/plot_locus_compare.R")
-source("../../../modules/templates/naive_coloc.R")
-source("../../../modules/templates/susie_coloc.R")
+source("../../../bin/functions/plot_locus_compare.R")
+source("../../../bin/functions//naive_coloc.R")
+source("../../../bin/functions//susie_coloc.R")
 
 # READ DATA ----
 
@@ -219,7 +219,7 @@ res_coloc <- mclapply(
     if (nrow(res_all) == 0) {
       message("[LOG] No SNP overlap between exposure and outcome data!")
       message(glue("[LOG] Skipping Colocalization with `{x}`"))
-      return(list(NA))
+      return(list())
     }
     
     ## align effect estimates (this currently ignores INDELs --> check!)

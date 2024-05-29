@@ -119,7 +119,7 @@ susie.coloc <- function(
   ## check whether both have outcome
   if (!(length(susie.olink) > 1 & 
         length(susie.trait) > 1)) {
-    return(NULL)
+    return(list())
   }
   
   ## additional check, whether both traits have at least
@@ -127,7 +127,7 @@ susie.coloc <- function(
   if (!(length(summary(susie.olink)$cs) > 0 &
         length(summary(susie.trait)$cs) > 0
   )) {
-    return(NULL)
+    return(list())
   }
   
   #-----------------------------------------#
