@@ -61,7 +61,6 @@ res_finemapping <- fread(res_finemapping_file, na.strings = "")
 outcome_dd <- fread(outcome_dd_file, na.strings = "")
 
 nmr_region_parts <- unlist(strsplit(nmr_region, split = "\\."))
-# olink <- nmr_region_parts[1] # TODO: this is now several
 nmr_phenotypes <- unique(res_finemapping$pheno)
 chr.s <- res_finemapping$chrom[1]
 pos.s <- res_finemapping$startpos_region[1]
@@ -297,7 +296,7 @@ res_coloc <- rbindlist(res_coloc, fill = TRUE, use.names = TRUE)
 
 if(nrow(res_coloc) > 0) {
   ## store results
-  write.table(
+  fwrite(
     res_coloc,
     paste0(paste("./tables/coloc_results_region", nmr_region, sep = "_"), ".tsv"),
     sep = "\t",
