@@ -5,7 +5,7 @@
 ## than one causal variant with susie coloc
 
 susie.coloc <- function(
-  res.all,
+  res_all,
   res.olink,
   ld,
   top.snp,
@@ -17,7 +17,7 @@ susie.coloc <- function(
   biomart_gene_annotation,
   rec_file
 ) {
-  ## 'res.all' -- data set containing merged and aligned statistics
+  ## 'res_all' -- data set containing merged and aligned statistics
   ## 'ld'      -- corresponding LD matrix
   ## 'top.snp' -- top snps for pQTL credible sets
 
@@ -26,23 +26,23 @@ susie.coloc <- function(
   #-----------------------------------------#
 
   ## order by position
-  res.all <- as.data.table(res.all)
-  res.all <- res.all[order(genpos)]
+  res_all <- as.data.table(res_all)
+  res_all <- res_all[order(genpos)]
 
   ## edit names
   rownames(ld) <- colnames(ld)
 
   ## prepare input
   D1 <- list(
-    beta = res.all$Effect,
-    varbeta = res.all$StdErr^2,
+    beta = res_all$Effect,
+    varbeta = res_all$StdErr^2,
     type = "quant",
     sdY = 1,
     N = 434646,
-    snp = paste0("V", res.all$snp_id),
-    position = 1:nrow(res.all),
+    snp = paste0("V", res_all$snp_id),
+    position = 1:nrow(res_all),
     ## subset the LD matrix to what is needed
-    LD = as.matrix(ld[paste0("V", res.all$snp_id), paste0("V", res.all$snp_id)])
+    LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id)])
   )
 
   ## binary outcome
@@ -50,15 +50,15 @@ susie.coloc <- function(
     
     ## binary outcome
     D2 <- list(
-      beta = res.all$Effect_outcome, 
-      varbeta = res.all$StdErr_outcome^2,
+      beta = res_all$Effect_outcome, 
+      varbeta = res_all$StdErr_outcome^2,
       type = "cc",
-      N = max(res.all$N),
-      s = max(res.all$outcome_n_cases) / max(res.all$N),
-      snp = paste0("V", res.all$snp_id),
-      position = 1:nrow(res.all),
+      N = max(res_all$N),
+      s = max(res_all$outcome_n_cases) / max(res_all$N),
+      snp = paste0("V", res_all$snp_id),
+      position = 1:nrow(res_all),
       ## subset the LD matrix to what is needed
-      LD = as.matrix(ld[paste0("V", res.all$snp_id), paste0("V", res.all$snp_id)])
+      LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id)])
     )
     
     ## Quantitative Outcome
@@ -69,15 +69,15 @@ susie.coloc <- function(
     }
     
     D2 <- list(
-      beta = res.all$Effect_outcome, 
-      varbeta = res.all$StdErr_outcome^2,
+      beta = res_all$Effect_outcome, 
+      varbeta = res_all$StdErr_outcome^2,
       type = "quant",
-      N = max(res.all$N),
-      MAF = res.all$FRQ,
-      snp = paste0("V", res.all$snp_id),
-      position = 1:nrow(res.all),
+      N = max(res_all$N),
+      MAF = res_all$FRQ,
+      snp = paste0("V", res_all$snp_id),
+      position = 1:nrow(res_all),
       ## subset the LD matrix to what is needed
-      LD = as.matrix(ld[paste0("V", res.all$snp_id), paste0("V", res.all$snp_id)])
+      LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id)])
     )
     
   } else {
@@ -168,7 +168,7 @@ susie.coloc <- function(
   ## taken forward)
   res.coloc <- merge(
     res.coloc,
-    res.all[, c(
+    res_all[, c(
       "snp_id", "id", "allele1", "allele0",
       "pval_marginal", "beta_marginal", "se_marginal",
       "pip", "cs", "Effect_outcome",
@@ -222,7 +222,7 @@ susie.coloc <- function(
       heights = c(.43, .37, .2)
     )
     plot.locus.compare(
-      sum.stat = res.all,
+      sum.stat = res_all,
       sum.coloc = res.coloc,
       ld,
       a.vars = unique(
@@ -281,9 +281,9 @@ susie.coloc <- function(
   ## add R2 with top credible set
   res.coloc <- merge(
     res.coloc,
-    res.all[, c(
+    res_all[, c(
       "marker_name",
-      grep("R2\\.", names(res.all), value = TRUE)
+      grep("R2\\.", names(res_all), value = TRUE)
     ), with = FALSE],
     by = "marker_name"
   )

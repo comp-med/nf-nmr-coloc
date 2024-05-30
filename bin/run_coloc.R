@@ -258,7 +258,7 @@ res_coloc <- mclapply(
     
     ## run coloc
     res_susie <- susie.coloc(
-      res.all = res_all, 
+      res_all = res_all, 
       res.olink = res_finemapping_pheno,
       ld = ld, 
       top.snp = top_snp_pheno,
