@@ -42,7 +42,7 @@ susie.coloc <- function(
     snp = paste0("V", res_all$snp_id),
     position = 1:nrow(res_all),
     ## subset the LD matrix to what is needed
-    LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id)])
+    LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id), drop = FALSE])
   )
 
   ## binary outcome
@@ -58,7 +58,7 @@ susie.coloc <- function(
       snp = paste0("V", res_all$snp_id),
       position = 1:nrow(res_all),
       ## subset the LD matrix to what is needed
-      LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id)])
+      LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id), drop = FALSE])
     )
     
     ## Quantitative Outcome
@@ -77,7 +77,7 @@ susie.coloc <- function(
       snp = paste0("V", res_all$snp_id),
       position = 1:nrow(res_all),
       ## subset the LD matrix to what is needed
-      LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id)])
+      LD = as.matrix(ld[paste0("V", res_all$snp_id), paste0("V", res_all$snp_id), drop = FALSE])
     )
     
   } else {
@@ -97,6 +97,7 @@ susie.coloc <- function(
     },
     error = function(e) {
       message(e)
+      return(list())
       }
   )
 
@@ -113,6 +114,7 @@ susie.coloc <- function(
     },
     error = function(e) {
       message(e)
+      return(list())
     }
   )
 

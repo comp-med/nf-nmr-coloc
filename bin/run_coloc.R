@@ -40,8 +40,9 @@ suppressPackageStartupMessages(library(glue, lib.loc = r_lib))
 # ADDITIONAL SCRIPTS ----
 
 source("../../../bin/functions/plot_locus_compare.R")
-source("../../../bin/functions//naive_coloc.R")
-source("../../../bin/functions//susie_coloc.R")
+source("../../../bin/functions/naive_coloc.R")
+source("../../../bin/functions/susie_coloc.R")
+source("../../../bin/functions/runsusie.R")
 
 # READ DATA ----
 
@@ -271,7 +272,7 @@ res_coloc <- mclapply(
     )
     
     ## add type of coloc
-    if (!is.null(res_susie) > 0) {
+    if (!is.null(nrow(res_susie)) > 0) {
       res_susie[, type := "susie"]
     }
     
