@@ -42,7 +42,6 @@ suppressPackageStartupMessages(library(glue, lib.loc = r_lib))
 source("../../../bin/functions/plot_locus_compare.R")
 source("../../../bin/functions/naive_coloc.R")
 source("../../../bin/functions/susie_coloc.R")
-source("../../../bin/functions/runsusie.R")
 
 # READ DATA ----
 
@@ -258,9 +257,9 @@ res_coloc <- mclapply(
     
     ## run coloc
     res_susie <- susie.coloc(
-      res_all = res_all, 
+      res_all = res_all,
       res.olink = res_finemapping_pheno,
-      ld = ld, 
+      ld = ld,
       top.snp = top_snp_pheno,
       x = x,
       y = y,
@@ -269,7 +268,7 @@ res_coloc <- mclapply(
       biomart_gene_annotation = biomart_gene_annotation,
       rec_file = rec_file
     )
-    
+
     ## add type of coloc
     if (!is.null(nrow(res_susie)) > 0) {
       res_susie[, type := "susie"]
