@@ -27,10 +27,17 @@ setnames(snplist, "snp")
 
 # Get all finemapping result directories for the input region
 master_file <- fread(nmr_finemap_master_file)
+setnames(
+  master_file,
+  c(
+    "index", "pheno", "region_name",
+    "chromosome", "region_start", "region_end"
+  )
+)
 master_file <- master_file[region_name == nmr_finemap_region]
 
 finemap_results_region <- lapply(master_file$index, function(x) {
-  fread(glue("{nmr_finemapping_results_directory}/{x}/finemapped_results.txt"))
+  fread(glue("{nmr_finemapping_results_directory}/{x}/finemapped_results.txt.gz"))
 })
 finemap_results_region <- rbindlist(finemap_results_region)
 finemap_results_region[, chrom := ifelse(chrom == "X", 23, chrom)]
