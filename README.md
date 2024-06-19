@@ -32,28 +32,62 @@ in the file `nextflow.config` (or the configuration for the used profile in
 
 ### UK Biobank NMR mQTL Finemapping Results 
 
-The main input from the mQTL analysis are the finemapped association
-results for each region. The directory containing the files for each metabolite
-is to be specified using the parameter
-`params$scallop_credible_sets_directory`. The content of the directory looks as
-follows:
+The main input from the mQTL analysis are the finemapped association results
+for each region. To process all input files correctly, a master table needs to
+specified with the parameter `params.nmr_finemap_master_table`. It contains
+information about each metabolite, region, and where the results are located.
+
+```
+index  phenotype           region_name  chrom  region_start  region_end
+1      Ala                 1_0          1      603426        2638126
+2      Val                 1_0          1      603426        2638126
+3      Total_BCAA          1_0          1      603426        2638126
+4      Citrate             1_0          1      603426        2638126
+5      ApoA1               1_0          1      603426        2638126
+[...]
+```
+
+The directory containing the files for each metabolite is to be specified using
+the parameter `params.nmr_credible_sets_directory`. Results for each
+combination and metabolite are saved in sequentially numbered sub-directories.
+The content of the directory looks as follows:
 
 ```bash
 .
-├── fine.mapped.OID00131_OID20049.1.11417521.12418988.txt
-├── fine.mapped.OID00131_OID20125.1.11417521.12418988.txt
-├── fine.mapped.OID00132_OID20753.4.88242563.89267969.txt
-├── fine.mapped.OID00287_OID20913.1.9503486.10545559.txt
-├── fine.mapped.OID00288_OID21081.2.206046714.207162857.txt
+├── 1
+│   ├── finemapped_results.txt.gz
+│   ├── flt_dosages.bgen
+│   ├── snps.dosage
+│   └── variants_dosages.txt
+├── 10
+│   ├── finemapped_results.txt.gz
+│   ├── flt_dosages.bgen
+│   ├── snps.dosage
+│   └── variants_dosages.txt
+[...]
+```
+
+The pre-computed LD matrix is expected to be located in a directory containing
+region-specific data. The main directory is specified using the parameter
+`params.nmr_ld_directory`. The the root directory structure is as follows.
+
+```bash
+.
+├── 10_0
+│   ├── ldmat.ld
+│   ├── mfile.z
+│   ├── snpdata.z
+│   └── snplist.txt
+├── 10_1
+│   ├── ldmat.ld
+│   ├── mfile.z
+│   ├── snpdata.z
+│   └── snplist.txt
 [...]
 ```
 
 The files themselves are custom and all analyses require that the column names
 adhere to the expected format.
-
-### LD matrices for each genomic region that contain mQTL signals
-
-# TODO!
 
 ### Recombination Map
 
