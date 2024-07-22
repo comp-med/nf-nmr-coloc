@@ -8,8 +8,6 @@ colocalization analysis of pQTL data on CVD outcomes, we use the UK Biobank NMR
 data mQTL results. A main difference is that this pipeline requires an existing
 LD matrix for each region and does not compute one manually.
 
-## Input Data
-
 ## Requirements
 
 * An `apptainer` image used for all processes that execute `R` code
@@ -168,7 +166,7 @@ nextflow run main.nf -resume -profile cluster
 nextflow run main.nf -resume -process.debug -profile cluster
 ```
 
-## Trouble Shooting
+## Troubleshooting
 
 When jobs fail, you can go to the work directory with the failed job and use
 `srun` or `sbatch` to manually submit the job and check the output.

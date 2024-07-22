@@ -1,6 +1,6 @@
 process CREATE_INPUT_FILES {
     
-    cache true
+    cache 'lenient'
     tag "$nmr_finemap_region"
     label 'rProcess'
 

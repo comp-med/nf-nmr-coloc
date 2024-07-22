@@ -1,6 +1,6 @@
 process TOP_SNP_AND_PROXIES {
 
-    cache true
+    cache 'lenient'
     tag "$nmr_finemap_region"
     label 'rProcess'
 
