@@ -158,6 +158,7 @@ res_coloc <- mclapply(
     
     ## make unique for some reason
     outcome_stats <- unique(outcome_stats)
+    outcome_stats[, CHR := ifelse(CHR == "X", 23, CHR)]
     
     ## create marker_name to enable mapping to the LD file
     outcome_stats[, marker_name := paste0(

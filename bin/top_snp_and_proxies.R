@@ -9,13 +9,6 @@ res_finemap_file <- args[2]
 ld_file        <- args[3]
 snplist_file  <- args[4]
 r_lib          <- args[5]
-# 
-# setwd("/sc-projects/sc-proj-computational-medicine/people/Carl/projects/08_nmr_metabolites/02_nmr_cvd_coloc/nf-nmr-coloc/work/b4/555383ef8717e916d5885060a598eb")
-# region <- "1_1"
-# res_finemap_file <- "finemap_results_region.tsv"
-# ld_file <- "ldmat.ld"
-# snplist_file <- "snplist.txt"
-# r_lib <- "/home/cabe12/R/"
 
 library(data.table, lib.loc = r_lib)
 
