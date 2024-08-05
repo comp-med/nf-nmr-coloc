@@ -143,6 +143,10 @@ res_coloc <- mclapply(
       return(list())
     }
     
+    # Make sure `X` is used instead of `23` for chromosome `23`
+    # We use `23`, Ensembl uses `X`, so we need to harmonize.
+    chr.s <- ifelse(chr.s == 23, "X", chr.s)
+    
     outcome_stats <- glue(
       "zcat {phenotype_file} | ",
       "awk -v chr={chr.s} -v low={pos.s} -v upp={pos.e} ",
