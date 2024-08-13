@@ -86,6 +86,9 @@ susie.coloc <- function(
   
   ## Olink protein
   set.seed(42)
+  # https://stackoverflow.com/questions/45774030/trycatch-with-parlapply-parallel-package-in-r
+  # This error probably cost me weeks of my life. 
+  # Thankfully, someone on stackoverflow had the solution 6 years ago.
   susie.olink <- tryCatch(
     {
       runsusie(
@@ -96,7 +99,6 @@ susie.coloc <- function(
       )
     },
     error = function(e) {
-      message(e)
       return(list())
       }
   )
@@ -113,7 +115,6 @@ susie.coloc <- function(
       )
     },
     error = function(e) {
-      message(e)
       return(list())
     }
   )
