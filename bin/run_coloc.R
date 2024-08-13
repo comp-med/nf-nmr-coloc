@@ -145,7 +145,7 @@ res_coloc <- mclapply(
     
     # Make sure `X` is used instead of `23` for chromosome `23`
     # We use `23`, Ensembl uses `X`, so we need to harmonize.
-    chr.s <- ifelse(chr.s == 23, "X", chr.s)
+    chr.s <- ifelse(as.character(chr.s) == "23", "X", chr.s)
     
     outcome_stats <- glue(
       "zcat {phenotype_file} | ",
@@ -157,12 +157,13 @@ res_coloc <- mclapply(
     
     # Sanity check in case the columns are re-arranged.
     stopifnot(
-      "[ERROR] No Outcome Summary Statistics found!" = nrow(outcome_stats) > 0
+      "[ERROR] Not enough Summary Statistics found!" = nrow(outcome_stats) > 50
     )
     
     ## make unique for some reason
     outcome_stats <- unique(outcome_stats)
-    outcome_stats[, CHR := ifelse(CHR == "X", 23, CHR)]
+    outcome_stats[, CHR := as.character(CHR)]
+    outcome_stats[, CHR := ifelse(CHR == "X", "23", CHR)]
     
     ## create marker_name to enable mapping to the LD file
     outcome_stats[, marker_name := paste0(
@@ -187,7 +188,6 @@ res_coloc <- mclapply(
       outcome_stats$N <- outcome_dd[phenotype_id == x, sample_size]
       message(glue("[LOG] Using single sample size value for `runsusie()`"))
     }
-    
     
     coloc_input_colums <- c("marker_name", "A1", "A2", "BETA", "SE", "P", "N", "FRQ")
     available_coloc_input_colums <- names(outcome_stats)[
