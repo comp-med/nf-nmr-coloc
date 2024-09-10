@@ -121,13 +121,13 @@ res_coloc <- mclapply(
       list(c(
         "SNP", # To get the header, too
         joint_snplist[pheno == (y), id_proxy])), 
-      "single_phenotype_snplist.tsv",
+      glue("single_phenotype_snplist_{y}.tsv"),
       sep = "\t",
       col.names = FALSE
     )
     
     outcome_sumstats_call <- glue(
-      "zgrep -wF -f single_phenotype_snplist.tsv {phenotype_file}"
+      "zgrep -wF -f single_phenotype_snplist_{y}.tsv {phenotype_file}"
     )
     
     ## get the relevant associations (A2 is the effect allele)
