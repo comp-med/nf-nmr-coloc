@@ -151,6 +151,14 @@ The data dictionary `params.outcome_data_dictionary` contains meta data for
 each phenotype. Specifically, the sample size is necessary for the
 colocalization analysis.
 
+### Data Dictionary
+
+The file specified under `params.outcome_data_dictionary` contains necessary
+meta data for each outcome file. Necessary columns are `phenotype_id` that
+contains a unique identifier for each file (e.g. the phenotype), `sample_size`,
+`trait_type` (either `quantitative` or `binary`), for binary traits the column
+`n_cases` is required.
+
 ## Get Started
 
 * Add parameters in `nextflow.config`
